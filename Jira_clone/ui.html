@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Workspace Prototype</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-card: #ffffff;
+            --bg-gray-panel: #f4f5f7;
+            --border-color: #cccccc;
+            --text-primary: #000000;
+            --text-secondary: #7a869a;
+            --btn-black: #000000;
+            --btn-gray: #e2e8f0;
+            --border-radius: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* App container matching image layouts */
+        .app-container {
+            background: var(--bg-main);
+            width: 100%;
+            max-width: 1100px;
+            min-height: 650px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            display: none; /* Hidden on login page */
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            height: 56px;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            height: 100%;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-item.active {
+            color: var(--text-primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--text-primary);
+        }
+
+        /* Views management */
+        .view-section {
+            display: none;
+            padding: 32px 40px;
+        }
+
+        .view-section.active-view {
+            display: block;
+        }
+
+        /* Generic Typography */
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+        }
+        .sub-title {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        /* Form / Input styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group textarea, .form-group select, .search-box {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+        }
+        .form-group textarea {
+            background-color: #f1f2f4;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn-black {
+            background: var(--btn-black);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 16px;
+        }
+
+        /* --- FLOW 1: LOGIN VIEW --- */
+        #view-login {
+            padding: 100px 0;
+            text-align: center;
+        }
+        .login-box {
+            max-width: 320px;
+            margin: 0 auto;
+        }
+        .login-box h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .login-box p {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+        .login-box input {
+            margin-bottom: 12px;
+        }
+        .login-box .btn-black {
+            width: 100%;
+            margin-top: 8px;
+        }
+        .forgot-pass {
+            display: block;
+            margin-top: 16px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        /* --- FLOW 2: MY WORK (LIST VIEW) --- */
+        .list-section-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin: 24px 0 12px 0;
+            letter-spacing: 0.5px;
+        }
+        .list-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            background: var(--bg-card);
+            cursor: pointer;
+        }
+        .badge-status {
+            background: #e2e8f0;
+            color: #4a5568;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: capitalize;
+        }
+
+        /* --- FLOW 3: BOARD VIEW --- */
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+        .board-column-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+        }
+        .board-dropzone {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .board-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            cursor: grab;
+        }
+        .board-card:active { cursor: grabbing; }
+        .board-card.dragging { opacity: 0.4; }
+        .board-card-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        .board-card-id {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* --- ADDED WORKFLOW: ISSUES SEARCH LIST/TABLE VIEW --- */
+        .issues-toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .issues-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+        .issues-table th, .issues-table td {
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+        }
+        .issues-table th {
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .issues-table tbody tr {
+            cursor: pointer;
+        }
+        .issues-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* --- FLOW 4: ISSUE DETAIL VIEW --- */
+        .detail-meta-row {
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+            padding-top: 20px;
+            display: flex;
+            gap: 60px;
+        }
+        .meta-item label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .meta-item span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Inline Form Row Layout for Create view */
+        .form-row-inline {
+            display: flex;
+            gap: 16px;
+            max-width: 500px;
+        }
+        .form-row-inline .form-group {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <nav class="navbar" id="app-nav">
+            <div class="nav-logo" onclick="switchView('view-mywork')">jira</div>
+            <div class="nav-links">
+                <div class="nav-item" id="tab-mywork" onclick="switchView('view-mywork')">My Work</div>
+                <div class="nav-item" id="tab-board" onclick="switchView('view-board')">Board</div>
+                <div class="nav-item" id="tab-issues" onclick="switchView('view-issues')">Issues</div> 
+                <div class="nav-item" id="tab-create" onclick="switchView('view-create')">Create</div>
+            </div>
+        </nav>
+
+        <section id="view-login" class="view-section active-view">
+            <div class="login-box">
+                <h1>jira</h1>
+                <p>Sign in to your workspace</p>
+                <form id="loginForm">
+                    <input type="email" placeholder="Email address" required value="raghav@workspace.com">
+                    <input type="password" placeholder="Password" required value="password123">
+                    <button type="submit" class="btn-black">Log in</button>
+                </form>
+                <a href="#" class="forgot-pass" onclick="alert('Password reset link sent!')">Forgot password?</a>
+            </div>
+        </section>
+
+        <section id="view-mywork" class="view-section">
+            <h2 id="mywork-title">My Work</h2>
+            <div class="sub-title" id="mywork-count">0 tasks</div>
+
+            <div class="list-section-header">To Do</div>
+            <div id="list-todo-container"></div>
+
+            <div class="list-section-header">In Progress</div>
+            <div id="list-inprogress-container"></div>
+
+            <div class="list-section-header">Done</div>
+            <div id="list-done-container"></div>
+        </section>
+
+        <section id="view-board" class="view-section">
+            <h2>Board</h2>
+            <div class="sub-title" style="margin-bottom: 24px;">Sprint Workspace</div>
+            
+            <div class="board-grid">
+                <div>
+                    <div class="board-column-title">To Do</div>
+                    <div class="board-dropzone" id="board-todo" data-status="todo"></div>
+                </div>
+                <div>
+                    <div class="board-column-title">In Progress</div>
+                    <div class="board-dropzone" id="board-inprogress" data-status="inprogress"></div>
+                </div>
+                <div>
+                    <div class="board-column-title">Done</div>
+                    <div class="board-dropzone" id="board-done" data-status="done"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-issues" class="view-section">
+            <h2>Issues</h2>
+            <div class="sub-title">Search and browse all project tickets</div>
+
+            <div class="issues-toolbar">
+                <input type="text" id="issues-search" class="search-box" placeholder="Search issues by summary title..." style="max-width: 400px;" oninput="renderIssuesTable()">
+                <select id="issues-filter-status" onchange="renderIssuesTable()" style="max-width: 200px; padding:10px;">
+                    <option value="all">All Statuses</option>
+                    <option value="todo">To Do</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="done">Done</option>
+                </select>
+            </div>
+
+            <table class="issues-table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Key</th>
+                        <th>Summary</th>
+                        <th style="width: 150px;">Status</th>
+                        <th style="width: 120px;">Priority</th>
+                    </tr>
+                </thead>
+                <tbody id="issues-table-body">
+                    </tbody>
+            </table>
+        </section>
+
+        <section id="view-issue-detail" class="view-section">
+            <div id="detail-key" style="font-size:12px; color:var(--text-secondary); font-weight:600; margin-bottom:4px;">PROJ-XX</div>
+            <h2 id="detail-title" style="margin-bottom: 12px;">Issue Title</h2>
+            <div style="margin-bottom: 24px;"><span class="badge-status" id="detail-status">Status</span></div>
+            
+            <div style="font-size:12px; color:var(--text-secondary); font-weight:600; margin-bottom:6px;">Description</div>
+            <p id="detail-desc" style="font-size:14px; margin:0 0 24px 0; line-height:1.5; max-width:700px;">No Description</p>
+
+            <div class="detail-meta-row">
+                <div class="meta-item">
+                    <label>Assignee</label>
+                    <span id="detail-assignee">Unassigned</span>
+                </div>
+                <div class="meta-item">
+                    <label>Priority</label>
+                    <span id="detail-priority">Medium</span>
+                </div>
+                <div class="meta-item">
+                    <label>Sprint</label>
+                    <span>Sprint 4</span>
+                </div>
+            </div>
+            <div style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top:20px;">
+                <button class="btn-black" onclick="switchView('view-issues')" style="padding: 8px 16px;">← Back to logs</button>
+            </div>
+        </section>
+
+        <section id="view-create" class="view-section">
+            <h2>Create issue</h2>
+            <div class="sub-title">Add a new task to your project</div>
+            
+            <form id="createIssueForm">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="form-title" placeholder="What needs to be done?" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="form-desc" rows="6"></textarea>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-group">
+                        <label>Assignee</label>
+                        <input type="text" id="form-assignee" placeholder="Select assignee">
+                    </div>
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="form-priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 32px;">
+                    <button type="submit" class="btn-black">Create issue</button>
+                    <button type="button" class="btn-cancel" onclick="switchView('view-mywork')">Cancel</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        // Data Store matching your workflow data visible from screen wireframes
+        let tasks = [
+            { id: 'PROJ-47', title: 'Implement user authentication flow', desc: 'The authentication flow should support email and password login, token refresh, and session expiry handling. Ensure all endpoints are secured and follow REST conventions.', status: 'inprogress', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-22', title: 'Research competitors', desc: 'Detailed analysis of competitor feature matrices.', status: 'todo', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-89', title: 'Build component library', desc: 'Setup core primitive buttons and layouts.', status: 'inprogress', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-69', title: 'Project kickoff', desc: 'Initial alignment call with stakeholders.', status: 'done', assignee: 'Unassigned', priority: 'High' },
+            { id: 'PROJ-37', title: 'Wireframe onboarding', desc: 'Design mobile onboarding screen experiences.', status: 'todo', assignee: 'Unassigned', priority: 'Low' },
+            { id: 'PROJ-98', title: 'API schema design', desc: 'Map out essential request/response payloads.', status: 'inprogress', assignee: 'Unassigned', priority: 'High' },
+            { id: 'PROJ-18', title: 'Sprint planning', desc: 'Organize backlog targets for incoming sprint cycles.', status: 'done', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-42', title: 'Define user personas', desc: 'Establish distinct archetype customer journeys.', status: 'todo', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-67', title: 'Stakeholder review', desc: 'Present early status check-ins directly with management.', status: 'done', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-11', title: 'Set up project repository', desc: 'Initialize repositories, prettier hooks, and branch restrictions.', status: 'todo', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-12', title: 'Write technical specification', desc: 'Draft architecture blueprints for review.', status: 'todo', assignee: 'Unassigned', priority: 'Medium' },
+            { id: 'PROJ-14', title: 'Design system tokens', desc: 'Export layout typography scaling metrics.', status: 'done', assignee: 'Unassigned', priority: 'Low' },
+            { id: 'PROJ-15', title: 'Onboarding flow review', desc: 'Review conversion metrics across signup funnel.', status: 'done', assignee: 'Unassigned', priority: 'High' }
+        ];
+
+        let idCounter = 100;
+
+        // Login implementation validation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('view-login').style.display = 'none';
+            document.getElementById('app-nav').style.display = 'flex';
+            switchView('view-mywork');
+        });
+
+        // View Router engine
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active-view');
+            });
+            document.querySelectorAll('.nav-item').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.getElementById(viewId).classList.add('active-view');
+
+            // Synchronize active navigation tabs
+            if(viewId === 'view-mywork') document.getElementById('tab-mywork').classList.add('active');
+            if(viewId === 'view-board') document.getElementById('tab-board').classList.add('active');
+            if(viewId === 'view-issues') document.getElementById('tab-issues').classList.add('active');
+            if(viewId === 'view-create') document.getElementById('tab-create').classList.add('active');
+
+            renderData();
+        }
+
+        // Display Detailed Single-Issue Context 
+        function openIssueDetail(taskId) {
+            let task = tasks.find(t => t.id === taskId);
+            if(!task) return;
+
+            document.getElementById('detail-key').textContent = task.id;
+            document.getElementById('detail-title').textContent = task.title;
+            document.getElementById('detail-status').textContent = task.status === 'todo' ? 'To Do' : (task.status === 'inprogress' ? 'In Progress' : 'Done');
+            document.getElementById('detail-desc').textContent = task.desc || 'No description provided.';
+            document.getElementById('detail-assignee').textContent = task.assignee || 'Unassigned';
+            document.getElementById('detail-priority').textContent = task.priority;
+
+            switchView('view-issue-detail');
+            // Retain active tracking state on whatever tab invoked the inspection view
+        }
+
+        // Independent rendering loop logic for Issues Log Table
+        function renderIssuesTable() {
+            const tbody = document.getElementById('issues-table-body');
+            const searchVal = document.getElementById('issues-search').value.toLowerCase();
+            const statusFilter = document.getElementById('issues-filter-status').value;
+            
+            tbody.innerHTML = '';
+
+            tasks.forEach(task => {
+                // Apply search filter logic
+                const matchesSearch = task.title.toLowerCase().includes(searchVal);
+                // Apply dropdown status filter logic
+                const matchesStatus = (statusFilter === 'all') || (task.status === statusFilter);
+
+                if (matchesSearch && matchesStatus) {
+                    let tr = document.createElement('tr');
+                    tr.onclick = () => openIssueDetail(task.id);
+                    tr.innerHTML = `
+                        <td style="font-weight: 600; color: var(--text-secondary);">${task.id}</td>
+                        <td style="font-weight: 500;">${task.title}</td>
+                        <td><span class="badge-status">${task.status === 'todo' ? 'To Do' : (task.status === 'inprogress' ? 'In Progress' : 'Done')}</span></td>
+                        <td>${task.priority}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        // Master App UI Renderer Loop
+        function renderData() {
+            // Count total tasks 
+            document.getElementById('mywork-count').textContent = `${tasks.length} tasks`;
+
+            // Clear view placeholders
+            const listTodo = document.getElementById('list-todo-container');
+            const listInprogress = document.getElementById('list-inprogress-container');
+            const listDone = document.getElementById('list-done-container');
+            
+            const boardTodo = document.getElementById('board-todo');
+            const boardInprogress = document.getElementById('board-inprogress');
+            const boardDone = document.getElementById('board-done');
+
+            listTodo.innerHTML = ''; listInprogress.innerHTML = ''; listDone.innerHTML = '';
+            boardTodo.innerHTML = ''; boardInprogress.innerHTML = ''; boardDone.innerHTML = '';
+
+            tasks.forEach(task => {
+                // 1. Render rows into List View (Flow 2)
+                let row = document.createElement('div');
+                row.className = 'list-row';
+                row.onclick = () => openIssueDetail(task.id);
+                row.innerHTML = `
+                    <span style="font-size:14px; font-weight:500;">${task.title}</span>
+                    <span class="badge-status">${task.status === 'todo' ? 'To Do' : (task.status === 'inprogress' ? 'In Progress' : 'Done')}</span>
+                `;
+
+                if(task.status === 'todo') listTodo.appendChild(row);
+                else if(task.status === 'inprogress') listInprogress.appendChild(row);
+                else if(task.status === 'done') listDone.appendChild(row);
+
+                // 2. Render cards into Board View (Flow 3)
+                let card = document.createElement('div');
+                card.className = 'board-card';
+                card.draggable = true;
+                card.dataset.id = task.id;
+                card.onclick = (e) => {
+                    if(!card.classList.contains('dragging')) openIssueDetail(task.id);
+                };
+                card.innerHTML = `
+                    <div class="board-card-title">${task.title}</div>
+                    <div class="board-card-id">${task.id}</div>
+                `;
+
+                // Drag management bindings
+                card.addEventListener('dragstart', () => card.classList.add('dragging'));
+                card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+                if(task.status === 'todo') boardTodo.appendChild(card);
+                else if(task.status === 'inprogress') boardInprogress.appendChild(card);
+                else if(task.status === 'done') boardDone.appendChild(card);
+            });
+
+            // Keep the search table synced whenever dataset updates
+            renderIssuesTable();
+        }
+
+        // Attach Drag & Drop interaction behaviors
+        document.querySelectorAll('.board-dropzone').forEach(zone => {
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const activeCard = document.querySelector('.dragging');
+                if(activeCard) {
+                    const id = activeCard.dataset.id;
+                    const nextStatus = zone.dataset.status;
+                    
+                    let targetTask = tasks.find(t => t.id === id);
+                    if(targetTask) {
+                        targetTask.status = nextStatus;
+                        renderData();
+                    }
+                }
+            });
+        });
+
+        // Form Submit Handler (Flow 5: Issue Creation)
+        document.getElementById('createIssueForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            idCounter++;
+
+            let newTask = {
+                id: `PROJ-${idCounter}`,
+                title: document.getElementById('form-title').value,
+                desc: document.getElementById('form-desc').value,
+                status: 'todo',
+                assignee: document.getElementById('form-assignee').value || 'Unassigned',
+                priority: document.getElementById('form-priority').value
+            };
+
+            tasks.unshift(newTask); // Add directly onto internal dataset structure
+            this.reset();
+            switchView('view-issues'); // Navigate out directly to updated global tracking list
+        });
+
+        // Seed initialization
+        renderData();
+    </script>
+</body>
+</html>
